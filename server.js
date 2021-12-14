@@ -1,20 +1,32 @@
 const express = require('express')
 const app = express()
-//const swaggerUi = require('swagger-ui-express')
-//const swaggerFile = require('./swagger_output.json')
+require("dotenv").config()
 const connection = require('./connection');
 const cors = require('cors');
-const port = 3000
+const port = 3000;
+const swaggerJsDoc=require('swagger-jsdoc');
+const swaggerUI=require('swagger-ui-express');
+const YAML = require('yaml');
 
-/*const expressOasGenerator = require('express-oas-generator');
-expressOasGenerator.init(app, {});*/
+const options= {
+    definition: {
+        openapi: "3.0.0",
+        info: {
+            title: "Interns",
+            description: "the services that concerns the interns"
+        }
+    },
+    apis: ["routes/interns.js"]
+}
+
+const specs = swaggerJsDoc(options)
+app.use("/api-docs", swaggerUI.serve, swaggerUI.setup(specs))
 
 app.use(express.json());
 app.use(cors());
 
-//app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
- connection.connect((err) => {
+connection.connect((err) => {
     if (err) throw err;
     else console.log('Connected to Database...')
 }); 
@@ -24,8 +36,6 @@ app.listen(port,() => {
 }
 ) 
 
-const internsRouter = require('./interns');
+const internsRouter = require('./routes/interns');
 app.use('/interns', internsRouter);
 
-/*const swaggerRouter = require('./swagger');
-app.use('/swagger', swaggerRouter);*/

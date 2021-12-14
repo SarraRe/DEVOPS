@@ -1,6 +1,54 @@
 const router = require('express').Router();
-const connection = require('./connection');
+const connection = require('../connection');
 const nodemailer = require("nodemailer");
+
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     interns:
+ *       type: object
+ *       required: 
+ *                 -nom
+ *                 -prenom
+ *                 -email
+ *       properties:
+ *          id:
+ *             type: integer
+ *             description: auto-gnerated identificator of the intern
+ *          nom:
+ *             type: string
+ *             description: the intern's family name     
+ *          prenom:
+ *             type: string
+ *             description: the intern's name              
+ *          email:
+ *             type: string
+ *             description: the intern's email           
+ */
+
+
+/**
+ * @swagger
+ * /interns/add:
+ *  post:
+ *     summary: creates a new intern
+ *     requestBody:
+ *      required: true 
+ *      content:
+ *         application/json:
+ *           schema:
+ *              $ref: '#/components/schemas/interns'
+ *     responses:
+ *      200:
+ *       description: The intern was succesfully added
+ *       content:
+ *          application/json:
+ *            schema:
+ *               $ref: '#/components/schemas/interns'
+ *       500:
+ *        description: some server error
+ */
 
 router.post('/add', (req, res) => {
     const nom = req.body.nom;
@@ -15,18 +63,58 @@ router.post('/add', (req, res) => {
     });
 });
 
-router.get('/FindAllInterns', (req, res) => {
+/** 
+ * @swagger
+ * /interns:
+ *     get:
+ *        summary: returns the list of all interns
+ *        responses: 
+ *          200:
+ *            decription: the list of the interns
+ *            content: 
+ *                  application/json:
+ *                    schema:
+ *                      type: array
+ *                      items: '$ref/components/schemas/interns'
+ */
+
+
+router.get('/', (req, res) => {
     connection.query('SELECT * from intern', function (error, results, fields) {
         if (error) throw error;
         else res.send(results)
     });
 });
 
-router.get('/findInternByID/:id', (req, res) => {
+/** 
+ * @swagger
+ * /interns/{id}:
+ *     get:
+ *        summary: returns the intern by its id 
+ *        parameters:
+ *          - in: path
+ *            name: id 
+ *            schema:
+ *              type: integer
+ *            required: true
+ *            description: the intern's id
+ *        responses:
+ *           200:
+ *            description: the intern's info by id
+ *            content:
+ *              application/json:
+ *                 schema:
+ *                   $ref: '#/components/schemas/interns'
+ *           404: 
+ *              description: the intern was not found
+ */
+
+
+router.get('/:id', (req, res) => {
     const id = req.params.id;
     connection.query('SELECT * from intern where id=?', id, function (error, results, fields) {
-        if (error) throw error;
-        else res.send(results)
+        if (!id) res.sendStatus(404);
+        else res.send(results[0])
     });
 });
 
